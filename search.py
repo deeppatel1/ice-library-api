@@ -4,7 +4,7 @@ import json
 def search_elastic(client, query):
     query_string = get_search_template(query)
 
-    print(json.dumps(query_string))
+    # print(json.dumps(query_string))
 
     resp = client.search(
         index=ElasticConstants.VODS_LIBRARY_INDEX, body=query_string)

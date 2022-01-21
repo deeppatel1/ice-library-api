@@ -82,6 +82,7 @@ def get_search_template(query, is_clip, is_video, is_vod, random_query=False):
 
     if random_query:
         return {
+            "size": 75,
             "query": {
                 "function_score": {
                     "query": must_clause,

@@ -23,7 +23,8 @@ def get_video_details(video_id):
 def search():
     query = request.args.get('q', default="")
     type = request.args.get('returnType', default="")
-    response = jsonify(search_elastic(client, query, type))
+    random_query = request.args.get('randomQuery', default=False)
+    response = jsonify(search_elastic(client, query, type, random_query))
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
     

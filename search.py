@@ -1,9 +1,10 @@
 from array import array
+from random import random
 from constants import ElasticConstants
 import json
 
 
-def search_elastic(client, query, type):
+def search_elastic(client, query, type, random_query):
 
     is_clip = False
     is_vid = False
@@ -19,7 +20,7 @@ def search_elastic(client, query, type):
         if array_types[2] == 'true':
             is_vod = True
 
-    query_string = get_search_template(query, is_clip, is_vid, is_vod)
+    query_string = get_search_template(query, is_clip, is_vid, is_vod, random_query)
 
     resp = client.search(
         index=ElasticConstants.VODS_LIBRARY_INDEX, body=query_string)
@@ -42,7 +43,7 @@ def create_response(number_of_hits, hits):
     return resp_dict
 
 
-def get_search_template(query, is_clip, is_video, is_vod):
+def get_search_template(query, is_clip, is_video, is_vod, random_query=False):
 
     # if clip, only get less than 2 minutes or 120
     # if video, get more than 2 mins, get less than 20 mins
@@ -78,6 +79,18 @@ def get_search_template(query, is_clip, is_video, is_vod):
             "duration": duration
         }
     }
+
+    if random_query:
+        return {
+            "query": {
+                "function_score": {
+                    "query": must_clause,
+                    "boost": "5",
+                    "random_score": {},
+                    "boost_mode": "multiply"
+                }
+            }
+        }
 
     return {
         "size": 75,

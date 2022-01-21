@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from elasticsearch import Elasticsearch
+from markupsafe import string
 from get_details import get_details
 from search import search_elastic
 from constants import ElasticConstants
@@ -20,8 +21,9 @@ def get_video_details(video_id):
 
 @app.route('/search', methods=['GET'])
 def search():
-    query = request.args.get('q')
-    response = jsonify(search_elastic(client, query))
+    query = request.args.get('q', default="")
+    type = request.args.get('returnType', default="")
+    response = jsonify(search_elastic(client, query, type))
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
     

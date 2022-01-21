@@ -1,10 +1,25 @@
+from array import array
 from constants import ElasticConstants
 import json
 
-def search_elastic(client, query):
-    query_string = get_search_template(query)
 
-    # print(json.dumps(query_string))
+def search_elastic(client, query, type):
+
+    is_clip = False
+    is_vid = False
+    is_vod = False
+
+    array_types = type.split(",")
+
+    if len(array_types) == 3:
+        if array_types[0] == 'true':
+            is_clip = True
+        if array_types[1] == 'true':
+            is_vid = True
+        if array_types[2] == 'true':
+            is_vod = True
+
+    query_string = get_search_template(query, is_clip, is_vid, is_vod)
 
     resp = client.search(
         index=ElasticConstants.VODS_LIBRARY_INDEX, body=query_string)
@@ -27,7 +42,43 @@ def create_response(number_of_hits, hits):
     return resp_dict
 
 
-def get_search_template(query):
+def get_search_template(query, is_clip, is_video, is_vod):
+
+    # if clip, only get less than 2 minutes or 120
+    # if video, get more than 2 mins, get less than 20 mins
+    # if vod, get more than 20 mins
+
+    # if all is true, do nothing
+
+    # vod == gte 20*60
+    # vid == gte 120, lte 60*120
+    # clip == lte 120
+
+    # vod + vid, gte 120
+    # vid + clip, less than 60*120
+
+    duration = {}
+
+    if is_vod and is_video and is_clip:
+        duration = duration
+    elif is_vod and is_video:
+        duration["gte"] = 60*2
+    elif is_video and is_clip:
+        duration["lte"] = 60*20
+    elif is_vod:
+        duration["gte"] = 60*20
+    elif is_video:
+        duration["gte"] = 60*2
+        duration["lte"] = 60*120
+    elif is_clip:
+        duration["lte"] = 60*2
+
+    must_clause = {
+        "range": {
+            "duration": duration
+        }
+    }
+
     return {
         "size": 75,
         "query": {
@@ -104,7 +155,8 @@ def get_search_template(query):
                             }
                         }
                     }
-                ]
+                ],
+                "must": must_clause
             }
         }
     }

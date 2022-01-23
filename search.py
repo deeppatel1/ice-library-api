@@ -1,7 +1,4 @@
-from array import array
-from random import random
 from constants import ElasticConstants
-import json
 
 
 def search_elastic(client, query, type, random_query):
@@ -25,16 +22,16 @@ def search_elastic(client, query, type, random_query):
     resp = client.search(
         index=ElasticConstants.VODS_LIBRARY_INDEX, body=query_string)
 
+
+    return create_response(resp)
+
+
+def create_response(resp):
     number_of_hits = resp.get('hits').get('total').get('value')
     hits = resp.get('hits').get('hits')
 
     for a in range(0, len(hits)):
         hits[a] = hits[a].get("_source")
-
-    return create_response(number_of_hits, hits)
-
-
-def create_response(number_of_hits, hits):
     resp_dict = {
         "count": number_of_hits,
         "videos": hits

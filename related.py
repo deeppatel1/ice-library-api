@@ -5,7 +5,7 @@ def process_related(client, title):
     query = {
         "query": {
             "more_like_this": {
-                "fields": ["title", "description", "tags"],
+                "fields": ["title"],
                 "like": title,
                 "min_term_freq": 1,
                 "max_query_terms": 12

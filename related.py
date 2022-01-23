@@ -3,6 +3,7 @@ from search import create_response
 
 def process_related(client, title):
     query = {
+        "size": 75,
         "query": {
             "more_like_this": {
                 "fields": ["title"],
